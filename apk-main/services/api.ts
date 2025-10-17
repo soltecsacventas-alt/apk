@@ -167,3 +167,80 @@ export async function fetchStations(): Promise<StationsResponse> {
     throw new Error(`Error al obtener estaciones: ${error}`);
   }
 }
+
+export interface Coordenada {
+  lat: number;
+  lng: number;
+}
+
+export interface Parcela {
+  id: number;
+  nombre: string;
+  coordenadas_gps: Coordenada[];
+  area_hectareas: number;
+  tipo_cultivo: string;
+  zona_id: number;
+  zona_nombre?: string;
+  total_estaciones: number;
+  color?: string;
+}
+
+export interface ParcelasResponse {
+  success: boolean;
+  data: Parcela[];
+  count: number;
+}
+
+export async function fetchParcelas(zonaId?: number): Promise<ParcelasResponse> {
+  try {
+    const url = zonaId
+      ? `${API_BASE_URL}/parcels?zona_id=${zonaId}`
+      : `${API_BASE_URL}/parcels`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data: ParcelasResponse = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(`Error al obtener parcelas: ${error}`);
+  }
+}
+
+export interface Zona {
+  id: number;
+  nombre: string;
+  cultivo: string;
+  area_hectareas: number;
+  altitud: number;
+  distrito: string;
+  region: string;
+  color: string;
+  total_parcelas: number;
+  total_estaciones: number;
+  total_sensores: number;
+}
+
+export interface ZonasResponse {
+  success: boolean;
+  data: Zona[];
+  count: number;
+}
+
+export async function fetchZonas(): Promise<ZonasResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/zones/list`);
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data: ZonasResponse = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(`Error al obtener zonas: ${error}`);
+  }
+}
