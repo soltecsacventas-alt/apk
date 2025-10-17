@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Activity } from 'lucide-react-native';
+import { Activity, MapPin } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -18,6 +18,15 @@ export default function TabLayout() {
           title: 'Estaciones IoT',
           tabBarIcon: ({ size, color }) => (
             <Activity size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Mapa',
+          tabBarIcon: ({ size, color }) => (
+            <MapPin size={size} color={color} />
           ),
         }}
       />

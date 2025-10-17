@@ -115,20 +115,55 @@ export async function getLastRealDataTimestamp(
     }
 
     const data = await response.json();
-    
+
     if (data.success && data.data && Array.isArray(data.data.datos) && data.data.datos.length > 0) {
       // Ordenar por timestamp y tomar el más reciente que no sea futuro
       const ahora = Date.now();
       const datosValidos = data.data.datos
         .filter(point => point.timestamp <= ahora)
         .sort((a, b) => b.timestamp - a.timestamp);
-      
+
       return datosValidos.length > 0 ? datosValidos[0].timestamp : 0;
     }
-    
+
     return 0;
   } catch (error) {
     console.error('Error al obtener último timestamp real:', error);
     return 0;
+  }
+}
+
+export interface Station {
+  id: number;
+  nombre: string;
+  latitud: number;
+  longitud: number;
+  altitud: number;
+  estado: 'online' | 'offline' | 'warning';
+  nivel_bateria: number;
+  intensidad_senal: number;
+  ultima_lectura: string;
+  zona?: string;
+  parcela?: string;
+}
+
+export interface StationsResponse {
+  success: boolean;
+  data: Station[];
+  count: number;
+}
+
+export async function fetchStations(): Promise<StationsResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/stations`);
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data: StationsResponse = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(`Error al obtener estaciones: ${error}`);
   }
 }
