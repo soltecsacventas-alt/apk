@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
-import MapView, { Marker, Polygon, PROVIDER_DEFAULT } from 'react-native-maps';
+import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity, Platform } from 'react-native';
 import { fetchStations, fetchParcelas, fetchZonas, Station, Parcela, Zona } from '@/services/api';
+
+let MapView: any;
+let Marker: any;
+let Polygon: any;
+let PROVIDER_DEFAULT: any;
+
+if (Platform.OS !== 'web') {
+  const maps = require('react-native-maps');
+  MapView = maps.default;
+  Marker = maps.Marker;
+  Polygon = maps.Polygon;
+  PROVIDER_DEFAULT = maps.PROVIDER_DEFAULT;
+}
 
 export default function MapScreen() {
   const [stations, setStations] = useState<Station[]>([]);
@@ -75,6 +87,51 @@ export default function MapScreen() {
     latitudeDelta: 0.1,
     longitudeDelta: 0.1,
   };
+
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.webTitle}>Vista de Mapa</Text>
+        <Text style={styles.webText}>
+          El mapa georreferenciado está disponible solo en la aplicación móvil.
+        </Text>
+        <View style={styles.statsContainer}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#2563eb" />
+          ) : (
+            <>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{stations.length}</Text>
+                <Text style={styles.statLabel}>Estaciones</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{parcelas.length}</Text>
+                <Text style={styles.statLabel}>Parcelas</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{zonas.length}</Text>
+                <Text style={styles.statLabel}>Zonas</Text>
+              </View>
+            </>
+          )}
+        </View>
+        {!loading && stations.length > 0 && (
+          <View style={styles.stationsList}>
+            <Text style={styles.listTitle}>Estaciones:</Text>
+            {stations.slice(0, 5).map((station) => (
+              <View key={station.id} style={styles.stationItem}>
+                <View style={[styles.statusDot, { backgroundColor: getMarkerColor(station.estado) }]} />
+                <Text style={styles.stationName}>{station.nombre}</Text>
+                <Text style={styles.stationCoords}>
+                  {station.latitud.toFixed(4)}, {station.longitud.toFixed(4)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -182,6 +239,88 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f9fafb',
+    padding: 20,
+  },
+  webTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  webText: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 32,
+    maxWidth: 400,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 32,
+  },
+  statCard: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    minWidth: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#2563eb',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  stationsList: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 600,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  listTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  stationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 12,
+  },
+  stationName: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  stationCoords: {
+    fontSize: 12,
+    color: '#9ca3af',
   },
   loadingText: {
     marginTop: 12,
